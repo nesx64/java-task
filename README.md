@@ -16,6 +16,9 @@ jtask is a lightweight task manager designed to help you organize your tasks eff
 
 ## Installation
 
+> [!WARNING]
+> Installing won't work for current version.
+
 1. Clone the repository:
 
    ```bash
