@@ -80,8 +80,11 @@ public class Utils {
      * @param input String to convert to a Boolean
      * @return the converted String
      */
-    static Boolean convertFileInputToBoolean(String input) {
-        return input.equals("true");
+    static Boolean convertInputToBoolean(String input) {
+        if (input.equals("true") || input.equals("false")) {
+            return input.equals("true");
+        }
+        return null;
     }
 
     /**
@@ -89,20 +92,15 @@ public class Utils {
      * task.</strong><br>
      * Depends on the status of the task being added by the user.
      *
-     * @param label task label
-     * @param begin task beginning date
-     * @param end task ending date (useless when status = false)
-     * @param type task type
-     * @param desc task description
-     * @param resp wether if the task if done or not
+     * @param t Task created from user input in add protocol
      * @return User confirmation
      */
-    static Boolean confirmAdd(String label, LocalDate begin, LocalDate end, TaskType type, String desc, String resp) {
+    static Boolean confirmAdd(Task t) {
         System.out.println("Before adding, let's review the task you want to add:");
-        if (resp.equals("y")) {
-            System.out.printf("Label: %s; Begin: %s; End: %s; Type: %s; Description: %s; Done: %s\n\n", label, begin, end, type, desc, true);
+        if (t.getEnd() != null) {
+            System.out.printf("Label: %s; Begin: %s; End: %s; Type: %s; Description: %s; Done: %s\n\n", t.getLabel(), t.getBeginning(), t.getEnd(), t.getTaskType(), t.getDescription(), t.isDone());
         } else {
-            System.out.printf("Label: %s; Begin: %s; Type: %s; Description: %s; Done: %s\n\n", label, begin, type, desc, false);
+            System.out.printf("Label: %s; Begin: %s; Type: %s; Description: %s; Done: %s\n\n", t.getLabel(), t.getBeginning(), t.getTaskType(), t.getDescription(), t.isDone());
         }
         Scanner sc = new Scanner(System.in);
         String userInput = "";
@@ -134,5 +132,15 @@ public class Utils {
             + "5. View all tasks\n"
             + "6. Settings\n"
             + "7. Quit\n\n"
-            + "--    " + Jtask.VERSION + "    --\n\n";
+            + "--    " + Jtask.VERSION + "    --\n";
+
+    /**
+     * jtask settings.ini file (user, not default) header
+     */
+    final static String JTASK_SETTINGS_HEAD = ""
+            + "##jtask user settings | " + Jtask.VERSION + "\n"
+            + "#it's better to modify directly inside jtask instead of manually.\n"
+            + "#do it at your own risk.\n"
+            + "\n"
+            + "#--------------------------------------\n\n";
 }

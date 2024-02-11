@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"jtask","l":"Jsettings"},{"p":"jtask","l":"Jtask"},{"p":"jtask","l":"Task"},{"p":"jtask","l":"TaskType"},{"p":"jtask","l":"Utils"}];updateSearchResults();

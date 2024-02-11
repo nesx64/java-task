@@ -10,19 +10,30 @@ package jtask;
  */
 public enum TaskType {
     CHORES, JOB, MEETING, STUDY, ENTERTAINMENT;
-    
+
+    /**
+     * <strong> Checks if the input is a valid TaskType enum
+     * element.</strong><br>
+     *
+     * @param input user input
+     * @return true iff input is a TaskType
+     */
     public static boolean isValidTaskType(String input) {
         switch (input) {
-            case "CHORES":
-            case "JOB":
-            case "MEETING":
-            case "STUDY":
-            case "ENTERTAINMENT":
+            case "CHORES", "JOB", "MEETING", "STUDY", "ENTERTAINMENT" -> {
                 return true;
+            }
         }
         return false;
     }
-    
+
+    /**
+     * <strong> Return the corresponding TaskType from String input.
+     * </strong><br>
+     *
+     * @param input user input
+     * @return the corresponding TaskType from input
+     */
     public static TaskType convertFileInputToTaskType(String input) {
         TaskType tt;
         switch (input) {

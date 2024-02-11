@@ -33,6 +33,7 @@ public class Task {
     public Task(String aLabel, LocalDate aBeginDate, TaskType aType, String aDesc, Boolean aStatus) {
         label = aLabel;
         beginning = aBeginDate;
+        end = null;
         taskType = aType;
         description = aDesc;
         done = aStatus;
@@ -111,7 +112,7 @@ public class Task {
      *
      * @return the status of the task
      */
-    public Boolean getStatus() {
+    public Boolean isDone() {
         return done;
     }
 
