@@ -25,8 +25,8 @@ jtask is a lightweight task manager designed to help you organize your tasks eff
 2. Navigate to the project directory and compile `jtask.java`:
 
    ```bash
-   cd jtask/src/
-   javac jtask.java
+   cd jtask
+   javac src/jtask/*
    ```
 
 3. Run jtask:
