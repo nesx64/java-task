@@ -16,27 +16,27 @@ jtask is a lightweight task manager designed to help you organize your tasks eff
 
 ## Installation
 
-> [!WARNING]
-> Installing won't work for current version.
-
 1. Clone the repository:
 
    ```bash
    git clone https://github.com/nex64/jtask.git
    ```
    
-2. Navigate to the project directory and compile `jtask.java`:
+2. Navigate to the project directory:
 
    ```bash
    cd jtask
-   javac src/jtask/*
    ```
 
 3. Run jtask:
 
    ```bash
-   java jtask
+   java -cp build/classes jtask.Jtask
    ```
+
+> [!CAUTION]
+> Do not build and compile by yourself for now, except if you know what you are doing. Project is already built and then won't need any compilation when cloned.
+> Building again could make jtask unable to load save file and then start.
 
 ## License
 
