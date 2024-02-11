@@ -1,3 +1,6 @@
-/Java-task/nbproject/private/
-/Java-task/build/
-/Java-task/dist/
+/nbproject
+/dist
+/build.xml
+/manifest.mf
+/.gitignore
+/build/.netbeans*
