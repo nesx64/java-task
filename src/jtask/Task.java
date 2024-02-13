@@ -13,12 +13,15 @@ import java.time.LocalDate;
  */
 public class Task {
 
+    private int key;
     private final String label;
     private final LocalDate beginning;
     private LocalDate end;
     private final TaskType taskType;
     private final String description;
     private Boolean done;
+
+    private static int taskSize = 0;
 
     /**
      * <strong>Main constructor of Task class.</strong><br>
@@ -31,12 +34,14 @@ public class Task {
      * @param aStatus current status of the task
      */
     public Task(String aLabel, LocalDate aBeginDate, TaskType aType, String aDesc, Boolean aStatus) {
+        key = taskSize;
         label = aLabel;
         beginning = aBeginDate;
         end = null;
         taskType = aType;
         description = aDesc;
         done = aStatus;
+        taskSize++;
     }
 
     /**
@@ -51,12 +56,33 @@ public class Task {
      * @param aStatus current status of the task
      */
     public Task(String aLabel, LocalDate aBeginDate, LocalDate anEndDate, TaskType aType, String aDesc, Boolean aStatus) {
+        key = taskSize;
         label = aLabel;
         beginning = aBeginDate;
         end = anEndDate;
         taskType = aType;
         description = aDesc;
         done = aStatus;
+        taskSize++;
+    }
+
+    /**
+     * Return the task key (identifier).
+     *
+     * @return the task key
+     */
+    public int getKey() {
+        return key;
+    }
+
+    /**
+     * <strong>Sets the key with a new given value. </strong> <br>
+     * Should only be used when shifting list.
+     *
+     * @param newValue new value for key
+     */
+    public void setKey(int newValue) {
+        key = newValue;
     }
 
     /**
@@ -124,5 +150,19 @@ public class Task {
     public void isOver(LocalDate endDate) {
         done = true;
         end = endDate;
+    }
+
+    /**
+     * <strong> Display task infos with formatted output. </strong> <br>
+     * End date is ignored if null or task done.
+     */
+    public void display() {
+        if (done && end != null) {
+            System.out.printf("Label: %s; Begin: %s; End: %s; Type: %s; Description: %s; Done: %s\n\n",
+                    getLabel(), getBeginning(), getEnd(), getTaskType(), getDescription(), isDone());
+        } else {
+            System.out.printf("Label: %s; Begin: %s; Type: %s; Description: %s; Done: %s\n\n",
+                    getLabel(), getBeginning(), getTaskType(), getDescription(), isDone());
+        }
     }
 }

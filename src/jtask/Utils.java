@@ -97,10 +97,10 @@ public class Utils {
      */
     static Boolean confirmAdd(Task t) {
         System.out.println("Before adding, let's review the task you want to add:");
-        if (t.getEnd() != null) {
-            System.out.printf("Label: %s; Begin: %s; End: %s; Type: %s; Description: %s; Done: %s\n\n", t.getLabel(), t.getBeginning(), t.getEnd(), t.getTaskType(), t.getDescription(), t.isDone());
+        if (!t.isDone() && t.getEnd() != null) {
+            t.display();
         } else {
-            System.out.printf("Label: %s; Begin: %s; Type: %s; Description: %s; Done: %s\n\n", t.getLabel(), t.getBeginning(), t.getTaskType(), t.getDescription(), t.isDone());
+            t.display();
         }
         Scanner sc = new Scanner(System.in);
         String userInput = "";
@@ -124,14 +124,16 @@ public class Utils {
     /**
      * jtask main menu.
      */
-    final static String JTASK_MENU = " --   jtask   --\n\n"
+    final static String JTASK_MENU = ""
+            + " --   jtask   --\n\n"
             + "1. Add a new task\n"
             + "2. View active tasks\n"
             + "3. View inactive tasks\n"
             + "4. Reset task file\n"
             + "5. View all tasks\n"
-            + "6. Settings\n"
-            + "7. Quit\n\n"
+            + "6. Save\n"
+            + "7. Settings\n"
+            + "8. Quit\n\n"
             + "--    " + Jtask.VERSION + "    --\n";
 
     /**

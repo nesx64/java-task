@@ -21,9 +21,9 @@ public class Jtask {
     ArrayList<Task> addedTasks;
     String saveFilePath;
     Jsettings settings;
-    final static int EXIT_PROGRAM = 7;
+    final static int EXIT_PROGRAM = 8;
     final static String SAVEFILE_SEPARATOR = ";:;";
-    final static String VERSION = "v0.2";
+    final static String VERSION = "v0.2.1";
     final static int ERROR_EXIT_CODE = 1;
 
     /**
@@ -96,25 +96,8 @@ public class Jtask {
         if (settings.autosaveEnabled()) {
             System.out.printf("jtask: saving ...\n");
             if (!addedTasks.isEmpty()) {
-                try {
-                    PrintWriter pw = new PrintWriter(new FileWriter(saveFilePath, true));
-                    for (Task t : addedTasks) {
-                        if (t.isDone()) {
-                            System.out.println("Writing finished tasks.");
-                            pw.printf("%s%s%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
-                                    t.getEnd(), SAVEFILE_SEPARATOR, t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
-                        } else {
-                            System.out.println("Writing unfinished tasks.");
-                            pw.printf("%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
-                                    t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
-                        }
-                    }
-                    pw.flush();
-                    pw.close();
-                } catch (IOException ex) {
-                    Logger.getLogger(Jtask.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                System.out.println("jtask: successfully saved.\nProgram will now exit.\n");
+                save();
+                System.out.println("Program will now exit.\n");
             } else {
                 System.out.println("jtask: no new tasks was added, don't need to save anything.\n");
             }
@@ -124,6 +107,35 @@ public class Jtask {
         }
         System.out.println("Thanks for using jtask.");
         System.out.println("If you've faced any bugs, please contact me on https://github.com/nesx64/jtask");
+    }
+
+    /**
+     * <strong>Save jtask tasks to save file.</strong>
+     */
+    private void save() {
+        if (addedTasks.isEmpty()) {
+            System.out.println("jtask: no need to save for now, no new tasks added.\n\n");
+            return;
+        }
+        try {
+            PrintWriter pw = new PrintWriter(new FileWriter(saveFilePath, true));
+            for (Task t : addedTasks) {
+                if (t.isDone()) {
+                    pw.printf("%s%s%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
+                            t.getEnd(), SAVEFILE_SEPARATOR, t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
+                } else {
+                    pw.printf("%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
+                            t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
+                }
+            }
+            loadedList.addAll(addedTasks);
+            addedTasks.removeAll(addedTasks);
+            System.out.println("jtask: successfully saved.\n\n");
+            pw.flush();
+            pw.close();
+        } catch (IOException ex) {
+            Logger.getLogger(Jtask.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -162,7 +174,7 @@ public class Jtask {
      * @param input user input to select the command
      */
     private void inputCheck(int input) {
-        if (input > 7 || input < 1) {
+        if (input > 8 || input < 1) {
             System.err.printf("jtask: error: incorrect input for menu selection.");
             return;
         }
@@ -178,6 +190,8 @@ public class Jtask {
             case 5 ->
                 jtask_viewAll();
             case 6 ->
+                save();
+            case 7 ->
                 jtask_settings();
         }
     }
@@ -341,8 +355,7 @@ public class Jtask {
         } else {
             for (Task t : loadedList) {
                 if (!t.isDone()) {
-                    System.out.printf("Label: %s; Begin: %s; Type: %s; Description: %s; Done: %s\n\n",
-                            t.getLabel(), t.getBeginning(), t.getTaskType(), t.getDescription(), t.isDone());
+                    t.display();
                 }
             }
         }
@@ -351,8 +364,7 @@ public class Jtask {
         } else {
             for (Task t : addedTasks) {
                 if (!t.isDone()) {
-                    System.out.printf("Label: %s; Begin: %s; Type: %s; Description: %s; Done: %s\n\n",
-                            t.getLabel(), t.getBeginning(), t.getTaskType(), t.getDescription(), t.isDone());
+                    t.display();
                 }
             }
         }
@@ -364,22 +376,20 @@ public class Jtask {
     private void jtask_viewInactive() {
         System.out.println("preview -- can have bugs\n\n");
         if (loadedList.isEmpty()) {
-            System.out.println("Save file is empty. No items to display.");
+            System.out.println("Save file is empty. Nothing to display.");
         } else {
             for (Task t : loadedList) {
                 if (t.isDone()) {
-                    System.out.printf("Label: %s; Begin: %s; End: %s; Type: %s; Description: %s; Done: %s\n\n",
-                            t.getLabel(), t.getBeginning(), t.getEnd(), t.getTaskType(), t.getDescription(), t.isDone());
+                    t.display();
                 }
             }
         }
         if (addedTasks.isEmpty()) {
-            System.out.println("No new added tasks. No items to display.");
+            System.out.println("No new added tasks. Nothing to display.");
         } else {
             for (Task t : addedTasks) {
                 if (t.isDone()) {
-                    System.out.printf("Label: %s; Begin: %s; End: %s; Type: %s; Description: %s; Done: %s\n\n",
-                            t.getLabel(), t.getBeginning(), t.getEnd(), t.getTaskType(), t.getDescription(), t.isDone());
+                    t.display();
                 }
             }
         }
@@ -393,10 +403,28 @@ public class Jtask {
     }
 
     /**
-     * TODO
+     * <strong> Display all tasks </strong> <br>
+     * Won't filter status.
      */
     private void jtask_viewAll() {
-        System.out.println("coming for newer versions.");
+        System.out.printf("---- Existing tasks ----\n\n");
+        if (!loadedList.isEmpty()) {
+
+            for (Task t : loadedList) {
+                t.display();
+            }
+        } else {
+            System.out.printf("No existing tasks. Nothing to display.\n\n");
+        }
+        System.out.printf("---- Added tasks ----\n\n");
+        if (!addedTasks.isEmpty()) {
+
+            for (Task t : addedTasks) {
+                t.display();
+            }
+        } else {
+            System.out.printf("No new added tasks. Nothing to display.\n\n");
+        }
     }
 
     /**
@@ -420,7 +448,7 @@ public class Jtask {
      *
      * @param fileName file name that has wrong format.
      */
-    private void jtask_err_wrongFormat(String fileName) {
+    private static void jtask_err_wrongFormat(String fileName) {
         System.err.printf("jtask: error: file %s has wrong format.\n", fileName);
         System.err.printf("Expected line format:\n");
         System.err.printf("[LABEL];:;[BEGIN DATE];:;__optional__[END DATE];:;[TASK TYPE];:;[DESCRIPTION];:;[TASK STATUS]\n");
