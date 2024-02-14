@@ -23,7 +23,7 @@ public class Jtask {
     Jsettings settings;
     final static int EXIT_PROGRAM = 8;
     final static String SAVEFILE_SEPARATOR = ";:;";
-    final static String VERSION = "v0.2.1";
+    final static String VERSION = "v0.3";
     final static int ERROR_EXIT_CODE = 1;
 
     /**
@@ -60,6 +60,7 @@ public class Jtask {
             System.out.println("If you already have an existing file with data, please type the file path, else the file will be created: ");
             Scanner sc = new Scanner(System.in);
             String filePath = sc.nextLine();
+            //5
             saveFilePath = filePath;
             try {
                 File data = new File(filePath);
@@ -81,8 +82,8 @@ public class Jtask {
                 System.err.printf("as autoload is enabled, it will now be disabled.\n\n");
                 System.err.printf("next, you'll have to specify a save file.\n\n");
                 System.err.flush();
-                this.settings.setAutoload(Boolean.FALSE);
-                this.init();
+                settings.setAutoload(Boolean.FALSE);
+                init();
             }
         }
         System.out.printf("jtask ready!\n\n");
@@ -113,12 +114,19 @@ public class Jtask {
      * <strong>Save jtask tasks to save file.</strong>
      */
     private void save() {
-        if (addedTasks.isEmpty()) {
-            System.out.println("jtask: no need to save for now, no new tasks added.\n\n");
-            return;
-        }
         try {
-            PrintWriter pw = new PrintWriter(new FileWriter(saveFilePath, true));
+            PrintWriter pw = new PrintWriter(new FileWriter(saveFilePath, false));
+            if (!loadedList.isEmpty()) {
+                for (Task t : loadedList) {
+                    if (t.isDone()) {
+                        pw.printf("%s%s%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
+                                t.getEnd(), SAVEFILE_SEPARATOR, t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
+                    } else {
+                        pw.printf("%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
+                                t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
+                    }
+                }
+            }
             for (Task t : addedTasks) {
                 if (t.isDone()) {
                     pw.printf("%s%s%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
@@ -145,11 +153,11 @@ public class Jtask {
     private void init_loadSequence(File filePath) throws FileNotFoundException {
         System.out.printf("Loading %s ...\n", filePath);
         Scanner fileInput = new Scanner(filePath);
-        while (fileInput.hasNext()) {
-            String currentLine = fileInput.next();
+        while (fileInput.hasNextLine()) {
+            String currentLine = fileInput.nextLine();
             String[] elements = currentLine.split(SAVEFILE_SEPARATOR);
             if (elements.length < 5 || elements.length > 6) {
-                jtask_err_wrongFormat(filePath.toString());
+                jtask_err_wrongFormat(filePath.toString(), currentLine);
             }
             LocalDate begin = Utils.convertFileInputToDate(elements[1]);
 
@@ -161,7 +169,7 @@ public class Jtask {
             } else {
                 TaskType type = TaskType.convertFileInputToTaskType(elements[2]);
                 Boolean status = Utils.convertInputToBoolean(elements[4]);
-                loadedList.add(new Task(elements[0], begin, type, elements[3], status));
+                loadedList.add(new Task(elements[0], begin, null, type, elements[3], status));
             }
         }
     }
@@ -182,13 +190,13 @@ public class Jtask {
             case 1 ->
                 jtask_add();
             case 2 ->
-                jtask_viewActive();
+                jtask_remove();
             case 3 ->
-                jtask_viewInactive();
+                jtask_edit();
             case 4 ->
                 jtask_reset();
             case 5 ->
-                jtask_viewAll();
+                jtask_viewAll(false);
             case 6 ->
                 save();
             case 7 ->
@@ -203,12 +211,10 @@ public class Jtask {
      */
     private void jtask_add() {
         System.out.println("jtask: add a new task.");
-        boolean valid = false;
         Task t = null;
         do {
             t = add_collectProtocol();
-            valid = Utils.confirmAdd(t);
-        } while (!valid);
+        } while (!Utils.confirmAdd(t));
         if (t.isDone()) {
             addedTasks.add(t);
         } else {
@@ -219,182 +225,92 @@ public class Jtask {
 
     /**
      * <strong> Main protocol to retrieve new task info. </strong><br>
-     * Will ask for every needed info to create a new task.
+     * Will ask for every needed info to create a new task.<br>
      *
      * @return the task made of user typed infos
      */
     private Task add_collectProtocol() {
-        String label = add_label();
-        LocalDate begin = add_begin();
-        Boolean done = add_done();
-        return new Task(label, begin, add_end(done), add_type(), add_desc(), done);
+        String label = Utils.retrieveLabel();
+        LocalDate begin = Utils.retrieveBegin();
+        Boolean done = Utils.retrieveDone();
+        return new Task(label, begin, Utils.retrieveEnd(done), Utils.retrieveType(), Utils.retrieveDesc(), done);
     }
 
     /**
-     * <strong>Retrieve task label from user input. </strong> <br>
-     *
-     * @return task label from user input
+     * <strong> Remove a selected task from task list.</strong> <br>
+     * Will automatically save before removing.
      */
-    private String add_label() {
-        Scanner sc = new Scanner(System.in);
-        System.out.println("First, please type the task label:");
-        return sc.nextLine();
+    private void jtask_remove() {
+        save();
+        System.out.println("jtask: remove mode");
+        Integer toRemove;
+        do {
+            toRemove = selectTask();
+        } while (toRemove == null);
+        loadedList.remove(loadedList.get(toRemove));
+        Task.shiftLeftTaskListKeys(loadedList, toRemove-1);
+        save();
     }
 
     /**
-     * <strong>Retrieve task beginning date from user input.</strong> <br>
-     * Accepted format: YYYY-MM-DD
-     *
-     * @return task beginning date as LocalDate object
+     * <strong> Edit a selected task from task list.</strong> <br>
+     * Will automatically save before editing.
      */
-    private LocalDate add_begin() {
-        LocalDate begin = null;
-        Scanner sc = new Scanner(System.in);
-        System.out.println("Then, please type the beginning date of the task:");
-        boolean wrongDateFormat = true;
-        while (wrongDateFormat) {
-            System.out.println("FORMAT: YYYY-MM-DD");
-            String temp = sc.nextLine();
-            if (temp.length() != 10) {
-                System.err.println("jtask: wrong format for date.");
-            } else {
-                wrongDateFormat = false;
-                begin = LocalDate.parse(temp);
-            }
+    private void jtask_edit() {
+        save();
+        System.out.println("jtask: edition mode");
+        Integer toEditKey;
+        do {
+            toEditKey = selectTask();
+        } while (toEditKey == null);
+        Task toEdit = loadedList.get(toEditKey);
+        editProtocol(toEdit);
+        save();
+    }
+
+    /**
+     * <strong> Main protocol to edit a task.</strong> <br>
+     * Will automatically save before removing.
+     */
+    private void editProtocol(Task toEdit) {
+        System.out.println("You chose to edit :");
+        toEdit.display(true);
+        int input = 0;
+        do {
+            System.out.println("Select what you want to edit:");
+            System.out.println("(1) Title  (2) Description  (3) Status  (4) Back to menu");
+            input = new Scanner(System.in).nextInt();
+        } while (input < 1 && input > 4);
+        switch (input) {
+            case 1 -> toEdit.setLabel(Utils.retrieveLabel());
+            case 2 -> toEdit.setDesc(Utils.retrieveDesc());
+            case 3 -> toEdit.setToDone(Utils.retrieveEnd(Boolean.TRUE));
         }
-        return begin;
-    }
-
-    /**
-     * <strong>Retrieve task status from user input.</strong> <br>
-     *
-     * @return task status from user input
-     */
-    private Boolean add_done() {
-        System.out.println("Is the task already over? (y)es (n)o");
-        Scanner sc = new Scanner(System.in);
-        String resp = sc.nextLine();
-        while (!resp.equals("y") && !resp.equals("n")) {
-            System.err.println("jtask: input mismatch. Expected y or n.");
-            resp = sc.nextLine();
+        if (input != 4) {
+            System.out.printf("Successfully edited task %s.\n", toEdit.getLabel());
         }
-        return resp.equals("y");
+        
     }
 
     /**
-     * <strong>Retrieve task ending date from user input.</strong> <br>
-     * Accepted format: YYYY-MM-DD
-     *
-     * @return task ending date as LocalDate object
+     * <strong> Make user select a task from its key.</strong> <br>
+     * Will check if the given key corresponds to a real task.
+     * 
+     * @return the task key
      */
-    private LocalDate add_end(Boolean done) {
-        if (done) {
-            Boolean wrongDateFormat = true;
-            Scanner sc = new Scanner(System.in);
-            LocalDate end = null;
-            System.out.println("Then, please type the end date of the task:");
-            while (wrongDateFormat) {
-                System.out.println("FORMAT: YYYY-MM-DD");
-                String temp = sc.nextLine();
-                if (temp.length() != 10) {
-                    System.err.println("jtask: wrong format for date.");
-                } else {
-                    wrongDateFormat = false;
-                    end = LocalDate.parse(temp);
-                }
-            }
-            return end;
-        }
-        return null;
-    }
-
-    /**
-     * <strong>Retrieve task type from user input. </strong> <br>
-     * Can be only one valid TaskType enum element.
-     *
-     * @return task type from user input.
-     */
-    private TaskType add_type() {
-        System.out.println("Then, please type the type of the task:");
-        boolean wrongType = true;
-        Scanner sc = new Scanner(System.in);
-        TaskType type = null;
-        while (wrongType) {
-            System.out.println("Types : CHORES, JOB, MEETING, STUDY, ENTERTAINMENT");
-            String temp = sc.nextLine();
-            if (TaskType.isValidTaskType(temp)) {
-                wrongType = false;
-                type = TaskType.convertFileInputToTaskType(temp);
-            } else {
-                System.err.printf("jtask: %s wrong task type format.\n", temp);
-                System.err.flush();
-            }
-        }
-        return type;
-    }
-
-    /**
-     * <strong>Retrieve task description from user input. </strong> <br>
-     * No space allowed for now.
-     *
-     * @return task description from user input
-     */
-    private String add_desc() {
-        System.out.println("Then, please type the description of the task:");
-        Scanner sc = new Scanner(System.in);
-        return sc.nextLine();
-    }
-
-    /**
-     * Displays all active tasks.
-     */
-    private void jtask_viewActive() {
-        System.out.println("preview -- can have bugs\n\n");
-        if (loadedList.isEmpty()) {
-            System.out.println("Save file is empty. No items to display.");
+    private Integer selectTask() {
+        jtask_viewAll(true);
+        System.out.println("Select the task with the corresponding key:");
+        int input = new Scanner(System.in).nextInt();
+        if (loadedList.contains(Task.searchByKey(loadedList, input))) {
+            return input;
         } else {
-            for (Task t : loadedList) {
-                if (!t.isDone()) {
-                    t.display();
-                }
-            }
-        }
-        if (addedTasks.isEmpty()) {
-            System.out.println("No new added tasks. No items to display.");
-        } else {
-            for (Task t : addedTasks) {
-                if (!t.isDone()) {
-                    t.display();
-                }
-            }
+            System.err.println("jtask: selected task does not exist. Check selected key.");
+            System.err.flush();
+            return null;
         }
     }
-
-    /**
-     * Displays all inactive or done tasks.
-     */
-    private void jtask_viewInactive() {
-        System.out.println("preview -- can have bugs\n\n");
-        if (loadedList.isEmpty()) {
-            System.out.println("Save file is empty. Nothing to display.");
-        } else {
-            for (Task t : loadedList) {
-                if (t.isDone()) {
-                    t.display();
-                }
-            }
-        }
-        if (addedTasks.isEmpty()) {
-            System.out.println("No new added tasks. Nothing to display.");
-        } else {
-            for (Task t : addedTasks) {
-                if (t.isDone()) {
-                    t.display();
-                }
-            }
-        }
-    }
-
+    
     /**
      * TODO
      */
@@ -406,24 +322,45 @@ public class Jtask {
      * <strong> Display all tasks </strong> <br>
      * Won't filter status.
      */
-    private void jtask_viewAll() {
-        System.out.printf("---- Existing tasks ----\n\n");
-        if (!loadedList.isEmpty()) {
+    private void jtask_viewAll(boolean showKey) {
+        if (!showKey) {
+            System.out.printf("---- Existing tasks ----\n\n");
+            if (!loadedList.isEmpty()) {
 
-            for (Task t : loadedList) {
-                t.display();
+                for (Task t : loadedList) {
+                    t.display(false);
+                }
+            } else {
+                System.out.printf("No existing tasks. Nothing to display.\n\n");
+            }
+            System.out.printf("---- Added tasks ----\n\n");
+            if (!addedTasks.isEmpty()) {
+
+                for (Task t : addedTasks) {
+                    t.display(false);
+                }
+            } else {
+                System.out.printf("No new added tasks. Nothing to display.\n\n");
             }
         } else {
-            System.out.printf("No existing tasks. Nothing to display.\n\n");
-        }
-        System.out.printf("---- Added tasks ----\n\n");
-        if (!addedTasks.isEmpty()) {
+            System.out.printf("---- Existing tasks ----\n\n");
+            if (!loadedList.isEmpty()) {
 
-            for (Task t : addedTasks) {
-                t.display();
+                for (Task t : loadedList) {
+                    t.display(true);
+                }
+            } else {
+                System.out.printf("No existing tasks. Nothing to display.\n\n");
             }
-        } else {
-            System.out.printf("No new added tasks. Nothing to display.\n\n");
+            System.out.printf("---- Added tasks ----\n\n");
+            if (!addedTasks.isEmpty()) {
+
+                for (Task t : addedTasks) {
+                    t.display(true);
+                }
+            } else {
+                System.out.printf("No new added tasks. Nothing to display.\n\n");
+            }
         }
     }
 
@@ -448,8 +385,9 @@ public class Jtask {
      *
      * @param fileName file name that has wrong format.
      */
-    private static void jtask_err_wrongFormat(String fileName) {
+    private static void jtask_err_wrongFormat(String fileName, String line) {
         System.err.printf("jtask: error: file %s has wrong format.\n", fileName);
+        System.err.printf("found: \n%s\n", line);
         System.err.printf("Expected line format:\n");
         System.err.printf("[LABEL];:;[BEGIN DATE];:;__optional__[END DATE];:;[TASK TYPE];:;[DESCRIPTION];:;[TASK STATUS]\n");
         System.err.printf("Check carefully for ;:; separator, arg numbers. Description cannot have spaces.\n");

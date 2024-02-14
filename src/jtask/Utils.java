@@ -98,9 +98,9 @@ public class Utils {
     static Boolean confirmAdd(Task t) {
         System.out.println("Before adding, let's review the task you want to add:");
         if (!t.isDone() && t.getEnd() != null) {
-            t.display();
+            t.display(false);
         } else {
-            t.display();
+            t.display(false);
         }
         Scanner sc = new Scanner(System.in);
         String userInput = "";
@@ -112,6 +112,122 @@ public class Utils {
             }
         }
         return userInput.equals("y");
+    }
+    
+    /**
+     * <strong>Retrieve task label from user input. </strong> <br>
+     *
+     * @return task label from user input
+     */
+    public static String retrieveLabel() {
+        Scanner sc = new Scanner(System.in);
+        System.out.println("First, please type the task label:");
+        return sc.nextLine();
+    }
+
+    /**
+     * <strong>Retrieve task beginning date from user input.</strong> <br>
+     * Required format: YYYY-MM-DD
+     *
+     * @return task beginning date as LocalDate object
+     */
+    public static LocalDate retrieveBegin() {
+        LocalDate begin = null;
+        Scanner sc = new Scanner(System.in);
+        System.out.println("Then, please type the beginning date of the task:");
+        boolean wrongDateFormat = true;
+        while (wrongDateFormat) {
+            System.out.println("FORMAT: YYYY-MM-DD");
+            String temp = sc.nextLine();
+            if (temp.length() != 10) {
+                System.err.println("jtask: wrong format for date.");
+            } else {
+                wrongDateFormat = false;
+                begin = LocalDate.parse(temp);
+            }
+        }
+        return begin;
+    }
+
+    /**
+     * <strong>Retrieve task status from user input.</strong> <br>
+     *
+     * @return task status from user input
+     */
+    public static Boolean retrieveDone() {
+        System.out.println("Is the task already over? (y)es (n)o");
+        Scanner sc = new Scanner(System.in);
+        String resp = sc.nextLine();
+        while (!resp.equals("y") && !resp.equals("n")) {
+            System.err.println("jtask: input mismatch. Expected y or n.");
+            resp = sc.nextLine();
+        }
+        return resp.equals("y");
+    }
+
+    /**
+     * <strong>Retrieve task ending date from user input.</strong> <br>
+     * Required format: YYYY-MM-DD
+     *
+     * @param done true iff task is done
+     * @return task ending date as LocalDate object
+     */
+    public static LocalDate retrieveEnd(Boolean done) {
+        if (done) {
+            Boolean wrongDateFormat = true;
+            Scanner sc = new Scanner(System.in);
+            LocalDate end = null;
+            System.out.println("Then, please type the end date of the task:");
+            while (wrongDateFormat) {
+                System.out.println("FORMAT: YYYY-MM-DD");
+                String temp = sc.nextLine();
+                if (temp.length() != 10) {
+                    System.err.println("jtask: wrong format for date.");
+                } else {
+                    wrongDateFormat = false;
+                    end = LocalDate.parse(temp);
+                }
+            }
+            return end;
+        }
+        return null;
+    }
+
+    /**
+     * <strong>Retrieve task type from user input. </strong> <br>
+     * Can be only one valid TaskType enum element.
+     *
+     * @return task type from user input.
+     */
+    public static TaskType retrieveType() {
+        System.out.println("Then, please type the type of the task:");
+        boolean wrongType = true;
+        Scanner sc = new Scanner(System.in);
+        TaskType type = null;
+        while (wrongType) {
+            System.out.println("Types : CHORES, JOB, MEETING, STUDY, ENTERTAINMENT");
+            String temp = sc.nextLine();
+            if (TaskType.isValidTaskType(temp)) {
+                wrongType = false;
+                type = TaskType.convertFileInputToTaskType(temp);
+            } else {
+                System.err.printf("jtask: %s wrong task type format.\n", temp);
+                System.err.flush();
+            }
+        }
+        return type;
+    }
+
+    /**
+     * <strong>Retrieve task description from user input. </strong> <br>
+     * No space allowed for now.
+     *
+     * @return task description from user input
+     */
+    public static String retrieveDesc() {
+        System.out.println("Then, please type the description of the task:");
+        Scanner sc = new Scanner(System.in);
+        return sc.nextLine();
     }
 
     /**
@@ -127,8 +243,8 @@ public class Utils {
     final static String JTASK_MENU = ""
             + " --   jtask   --\n\n"
             + "1. Add a new task\n"
-            + "2. View active tasks\n"
-            + "3. View inactive tasks\n"
+            + "2. Remove a task\n"
+            + "3. Edit a task\n"
             + "4. Reset task file\n"
             + "5. View all tasks\n"
             + "6. Save\n"

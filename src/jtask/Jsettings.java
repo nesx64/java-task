@@ -65,12 +65,12 @@ public class Jsettings {
                     case "save_file" ->
                         savePath = key;
                     default ->
-                        sett_err_wrongFormat(currentLine);
+                        settingsError_wrongFormat(currentLine);
                 }
             }
         }
         if (autosave == null || autoload == null | savePath.equals("") || savePath == null) {
-            sett_err_corruptedSettings();
+            settingsError_corrupted();
             System.exit(Jtask.ERROR_EXIT_CODE);
         }
     }
@@ -83,7 +83,7 @@ public class Jsettings {
      * @param settingLine corresponding line that has wrong format or non
      * existing setting
      */
-    private void sett_err_wrongFormat(String settingLine) {
+    private void settingsError_wrongFormat(String settingLine) {
         System.err.printf("jtask: wrong format or non existing setting in %s file.", SETTINGS_FILE);
         System.err.printf("Responsible line: %s", settingLine);
     }
@@ -97,7 +97,7 @@ public class Jsettings {
      * @param settingLine corresponding line that has wrong format or non
      * existing setting
      */
-    private void sett_err_corruptedSettings() {
+    private void settingsError_corrupted() {
         System.err.printf("jtask: possible %s file corrupted or missing setting line.\n", SETTINGS_FILE);
         System.err.printf("check def/settings.ini to confirm no line is missing.\n");
     }
