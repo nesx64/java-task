@@ -1,15 +1,22 @@
-# jtask v0.2
+# jtask v0.3
 
 jtask is a lightweight task manager designed to help you organize your tasks efficiently. It is still in development and may lack some features, but it aims to provide a simple and intuitive interface for managing your tasks.
 
 
 ## Features
 
-- [X] **Task Creation**: Easily create new tasks with a title, description, and due date.
+- [X] **Task Creation**: Easily create new tasks with a title, description, and begin date.
 - [X] **Task Listing**: View all your tasks at a glance.
-- [ ] **Task Editing**: Modify task details such as title, description, and due date as needed.
-- [ ] **Task Completion**: Mark tasks as completed when you're done with them.
-- [ ] **Task Deletion**: Remove tasks that are no longer relevant or needed.
+- [X] **Task Editing**: Modify task details such as title, description, and status.
+- [X] **Task Completion**: Mark tasks as completed when you're done with them.
+- [X] **Task Deletion**: Remove tasks that are no longer relevant or needed.
+
+      
+### NEXT FEATURES :
+- [ ] **Enhanced UI**: Better visibility to visualize tasks.
+- [ ] **A better UX**: Gradually working toward a real GUI.
+- [ ] **Stronger code**: Better handling in unexpected exceptions.
+- [ ] **JSON**: A new way of manipulating data structures for Jtask
 
 > [!IMPORTANT]
 > For now, it doesn't have a GUI, newer versions will have one.
@@ -28,10 +35,10 @@ jtask is a lightweight task manager designed to help you organize your tasks eff
    cd jtask
    ```
 
-3. Run jtask:
+3. Run jtask from the `jar` file:
 
    ```bash
-   java -cp build/classes jtask.Jtask
+   java -jar jtask.jar
    ```
 
 > [!CAUTION]
