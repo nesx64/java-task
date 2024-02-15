@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package jtask;
 
 import java.io.*;
@@ -42,7 +38,7 @@ public class Jsettings {
             }
             loadSettings();
         } catch (IOException e) {
-            System.err.printf("jtask: unexpected error occured in loading current settings. check def directory or reinstall jtask.\n");
+            System.err.printf("jtask: unexpected error occurred in loading current settings. check def directory or reinstall jtask.\n");
             System.exit(Jtask.ERROR_EXIT_CODE);
         }
     }
@@ -55,7 +51,7 @@ public class Jsettings {
         Scanner sc = new Scanner(new File(SETTINGS_FILE));
         while (sc.hasNextLine()) {
             String currentLine = sc.nextLine();
-            if (currentLine.length() != 0 && !(currentLine.charAt(0) == '#')) {
+            if (!currentLine.isEmpty() && !(currentLine.charAt(0) == '#')) {
                 String key = currentLine.split("=")[1];
                 switch (currentLine.split("=")[0]) {
                     case "autosave" ->
@@ -69,7 +65,7 @@ public class Jsettings {
                 }
             }
         }
-        if (autosave == null || autoload == null | savePath.equals("") || savePath == null) {
+        if (autosave == null || autoload == null | savePath.isEmpty()) {
             settingsError_corrupted();
             System.exit(Jtask.ERROR_EXIT_CODE);
         }
@@ -80,8 +76,8 @@ public class Jsettings {
      * file.</strong><br>
      * Could be wrong format, or non existing settings for Jtask instance.
      *
-     * @param settingLine corresponding line that has wrong format or non
-     * existing setting
+     * @param settingLine corresponding line that has wrong format or non-existing
+     * setting.
      */
     private void settingsError_wrongFormat(String settingLine) {
         System.err.printf("jtask: wrong format or non existing setting in %s file.", SETTINGS_FILE);
@@ -94,8 +90,6 @@ public class Jsettings {
      * Could be missing setting line. Check default settings file if it ever
      * happens.
      *
-     * @param settingLine corresponding line that has wrong format or non
-     * existing setting
      */
     private void settingsError_corrupted() {
         System.err.printf("jtask: possible %s file corrupted or missing setting line.\n", SETTINGS_FILE);
@@ -122,7 +116,7 @@ public class Jsettings {
      * @return true iff any setting was modified
      */
     public Boolean edit() {
-        Boolean modified = false;
+        boolean modified = false;
         System.out.printf("Would you like to edit settings? (y)es (n)o\n");
         Scanner sc = new Scanner(System.in);
         String answer = sc.nextLine();
@@ -152,9 +146,7 @@ public class Jsettings {
                 case 3 ->
                     setSavePath(editSavePath());
             }
-            if (answer != 4) {
-                edited = true;
-            }
+            edited = true;
         }
     }
 
@@ -175,6 +167,7 @@ public class Jsettings {
         }
         do {
             newValue = Utils.convertInputToBoolean(new Scanner(System.in).nextLine());
+            assert newValue != null;
             if (!newValue.equals(Boolean.TRUE) && !newValue.equals(Boolean.FALSE)) {
                 System.err.printf("jtask: input mismatch. expected true or false\n");
                 System.err.flush();
@@ -199,24 +192,18 @@ public class Jsettings {
             System.out.println("To keep disabled, type false. To enable, type true.");
         }
 
-        do {
-            newValue = Utils.convertInputToBoolean(new Scanner(System.in).nextLine());
-            if (newValue != true && newValue != false) {
-                System.err.printf("jtask: input mismatch. expected true or false\n");
-                System.err.flush();
-            }
-        } while (newValue != true && newValue != false);
+        newValue = Utils.convertInputToBoolean(new Scanner(System.in).nextLine());
         return newValue;
     }
 
     /**
      * <strong>Retrieve the new value for savePath setting.</strong> <br>
-     * If new path typed points to a non existing file, it will ask again.
+     * If new path typed points to a non-existing file, it will ask again.
      *
      * @return the new path for savePath setting
      */
     private String editSavePath() {
-        String newPath = "";
+        String newPath;
         System.out.printf("current save file path: %s\n", savePath);
         
         do {

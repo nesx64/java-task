@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package jtask;
 
 import java.time.LocalDate;
@@ -39,11 +35,7 @@ public class Task {
         key = taskSize;
         label = aLabel;
         beginning = aBeginDate;
-        if (anEndDate == null) {
-            end = null;
-        } else {
-            end = anEndDate;
-        }
+        end = anEndDate;
         taskType = aType;
         description = aDesc;
         done = aStatus;
@@ -108,7 +100,7 @@ public class Task {
     }
 
     /**
-     * Return the task descripion.
+     * Return the task description.
      *
      * @return the task description
      */
@@ -166,7 +158,7 @@ public class Task {
     /**
      * Shift all tasks keys to the left inside the given list of tasks.
      * 
-     * @param lst list of tasks to be shift
+     * @param lst list of tasks to be shifted
      * @param start index where the shift will start
      */
     public static void shiftLeftTaskListKeys(ArrayList<Task> lst, int start) {

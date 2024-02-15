@@ -1,41 +1,13 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
 package jtask;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.time.LocalDate;
 import java.util.Scanner;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  *
- * @author lolo
+ * @author nesx64
  */
 public class Utils {
-
-    /**
-     * Return the number of lines in a file.
-     *
-     * @param in the file we want the number of lines.
-     * @return the number of lines in the file.
-     */
-    static int getFileSize(File in) {
-        int i = 0;
-        Scanner sc;
-        try {
-            sc = new Scanner(in);
-            while (sc.hasNext()) {
-                i++;
-            }
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(Utils.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return i;
-    }
 
     /**
      * <strong> Converts a String input to a LocalDate.</strong><br>
@@ -56,7 +28,7 @@ public class Utils {
                 temp.append(input.charAt(i));
                 i++;
             }
-            if (temp.length() != 0) {
+            if (!temp.isEmpty()) {
                 int addValue = Integer.parseInt(temp.toString());
                 switch (dtype) {
                     case 0 ->
@@ -75,7 +47,7 @@ public class Utils {
 
     /**
      * <strong> Converts a String input to a Boolean.</strong><br>
-     * Can be wether true or false.
+     * Can be whether true or false.
      *
      * @param input String to convert to a Boolean
      * @return the converted String
@@ -132,21 +104,31 @@ public class Utils {
      * @return task beginning date as LocalDate object
      */
     public static LocalDate retrieveBegin() {
-        LocalDate begin = null;
-        Scanner sc = new Scanner(System.in);
         System.out.println("Then, please type the beginning date of the task:");
-        boolean wrongDateFormat = true;
-        while (wrongDateFormat) {
+        return retrieveDate();
+    }
+
+    /**
+     * <strong> Retrieve a date and checks if it corresponds to specified format.</strong><br>
+     * Required format: YYYY-MM-DD
+     *
+     * @return the retrieved date from user input.
+     */
+    private static LocalDate retrieveDate() {
+        LocalDate date = null;
+        Scanner sc = new Scanner(System.in);
+        boolean wrongFormat = true;
+        while (wrongFormat) {
             System.out.println("FORMAT: YYYY-MM-DD");
             String temp = sc.nextLine();
             if (temp.length() != 10) {
                 System.err.println("jtask: wrong format for date.");
             } else {
-                wrongDateFormat = false;
-                begin = LocalDate.parse(temp);
+                wrongFormat = false;
+                date = LocalDate.parse(temp);
             }
         }
-        return begin;
+        return date;
     }
 
     /**
@@ -174,21 +156,8 @@ public class Utils {
      */
     public static LocalDate retrieveEnd(Boolean done) {
         if (done) {
-            Boolean wrongDateFormat = true;
-            Scanner sc = new Scanner(System.in);
-            LocalDate end = null;
             System.out.println("Then, please type the end date of the task:");
-            while (wrongDateFormat) {
-                System.out.println("FORMAT: YYYY-MM-DD");
-                String temp = sc.nextLine();
-                if (temp.length() != 10) {
-                    System.err.println("jtask: wrong format for date.");
-                } else {
-                    wrongDateFormat = false;
-                    end = LocalDate.parse(temp);
-                }
-            }
-            return end;
+            return retrieveDate();
         }
         return null;
     }
@@ -231,7 +200,7 @@ public class Utils {
     }
 
     /**
-     * jtask informations displayed on start.
+     * jtask information displayed on start.
      */
     final static String JTASK_INFO = " --- jtask " + Jtask.VERSION + " ---\n"
             + "GNU GPL-3.0 LICENSE\n"
@@ -240,8 +209,7 @@ public class Utils {
     /**
      * jtask main menu.
      */
-    final static String JTASK_MENU = ""
-            + " --   jtask   --\n\n"
+    final static String JTASK_MENU = " --   jtask   --\n\n"
             + "1. Add a new task\n"
             + "2. Remove a task\n"
             + "3. Edit a task\n"
@@ -255,8 +223,7 @@ public class Utils {
     /**
      * jtask settings.ini file (user, not default) header
      */
-    final static String JTASK_SETTINGS_HEAD = ""
-            + "##jtask user settings | " + Jtask.VERSION + "\n"
+    final static String JTASK_SETTINGS_HEAD = "##jtask user settings | " + Jtask.VERSION + "\n"
             + "#it's better to modify directly inside jtask instead of manually.\n"
             + "#do it at your own risk.\n"
             + "\n"

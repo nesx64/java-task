@@ -23,7 +23,7 @@ public class Jtask {
     Jsettings settings;
     final static int EXIT_PROGRAM = 8;
     final static String SAVEFILE_SEPARATOR = ";:;";
-    final static String VERSION = "v0.3";
+    final static String VERSION = "v0.3.1";
     final static int ERROR_EXIT_CODE = 1;
 
     /**
@@ -50,7 +50,7 @@ public class Jtask {
     }
 
     /**
-     * Check wether existing file containing all tasks already exists or not. If
+     * Check whether existing file containing all tasks already exists or not. If
      * the file already exists, it will load everything inside the global list.
      * If autoload is enabled, will not ask for typing and will load
      * automatically the save file.
