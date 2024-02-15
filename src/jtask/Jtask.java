@@ -1,7 +1,3 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
 package jtask;
 
 import java.util.ArrayList;
@@ -12,17 +8,16 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- *
  * @author nesx64
  */
 public class Jtask {
 
-    ArrayList<Task> loadedList;
-    ArrayList<Task> addedTasks;
+    final ArrayList<Task> loadedList;
+    final ArrayList<Task> addedTasks;
     String saveFilePath;
-    Jsettings settings;
+    final Jsettings settings;
     final static int EXIT_PROGRAM = 8;
-    final static String SAVEFILE_SEPARATOR = ";:;";
+    final static String SAVE_FILE_SEPARATOR = ";:;";
     final static String VERSION = "v0.3.1";
     final static int ERROR_EXIT_CODE = 1;
 
@@ -60,7 +55,6 @@ public class Jtask {
             System.out.println("If you already have an existing file with data, please type the file path, else the file will be created: ");
             Scanner sc = new Scanner(System.in);
             String filePath = sc.nextLine();
-            //5
             saveFilePath = filePath;
             try {
                 File data = new File(filePath);
@@ -117,32 +111,33 @@ public class Jtask {
         try {
             PrintWriter pw = new PrintWriter(new FileWriter(saveFilePath, false));
             if (!loadedList.isEmpty()) {
-                for (Task t : loadedList) {
-                    if (t.isDone()) {
-                        pw.printf("%s%s%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
-                                t.getEnd(), SAVEFILE_SEPARATOR, t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
-                    } else {
-                        pw.printf("%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
-                                t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
-                    }
-                }
+                writeSaveFile(pw, loadedList);
             }
-            for (Task t : addedTasks) {
-                if (t.isDone()) {
-                    pw.printf("%s%s%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
-                            t.getEnd(), SAVEFILE_SEPARATOR, t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
-                } else {
-                    pw.printf("%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVEFILE_SEPARATOR, t.getBeginning(), SAVEFILE_SEPARATOR,
-                            t.getTaskType(), SAVEFILE_SEPARATOR, t.getDescription(), SAVEFILE_SEPARATOR, t.isDone());
-                }
-            }
+            writeSaveFile(pw, addedTasks);
             loadedList.addAll(addedTasks);
-            addedTasks.removeAll(addedTasks);
+            addedTasks.clear();
             System.out.println("jtask: successfully saved.\n\n");
             pw.flush();
             pw.close();
         } catch (IOException ex) {
             Logger.getLogger(Jtask.class.getName()).log(Level.SEVERE, null, ex);
+        }
+    }
+    /**
+     * <strong> Write in save file from the given list all tasks.</strong> <br>
+     *
+     * @param pw printWriter used to write into the save file
+     * @param list list to be copied into the save file
+     */
+    private void writeSaveFile(PrintWriter pw, ArrayList<Task> list) {
+        for (Task t : list) {
+            if (t.isDone()) {
+                pw.printf("%s%s%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVE_FILE_SEPARATOR, t.getBeginning(), SAVE_FILE_SEPARATOR,
+                        t.getEnd(), SAVE_FILE_SEPARATOR, t.getTaskType(), SAVE_FILE_SEPARATOR, t.getDescription(), SAVE_FILE_SEPARATOR, t.isDone());
+            } else {
+                pw.printf("%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVE_FILE_SEPARATOR, t.getBeginning(), SAVE_FILE_SEPARATOR,
+                        t.getTaskType(), SAVE_FILE_SEPARATOR, t.getDescription(), SAVE_FILE_SEPARATOR, t.isDone());
+            }
         }
     }
 
@@ -155,7 +150,7 @@ public class Jtask {
         Scanner fileInput = new Scanner(filePath);
         while (fileInput.hasNextLine()) {
             String currentLine = fileInput.nextLine();
-            String[] elements = currentLine.split(SAVEFILE_SEPARATOR);
+            String[] elements = currentLine.split(SAVE_FILE_SEPARATOR);
             if (elements.length < 5 || elements.length > 6) {
                 jtask_err_wrongFormat(filePath.toString(), currentLine);
             }
@@ -187,20 +182,13 @@ public class Jtask {
             return;
         }
         switch (input) {
-            case 1 ->
-                jtask_add();
-            case 2 ->
-                jtask_remove();
-            case 3 ->
-                jtask_edit();
-            case 4 ->
-                jtask_reset();
-            case 5 ->
-                jtask_viewAll(false);
-            case 6 ->
-                save();
-            case 7 ->
-                jtask_settings();
+            case 1 -> jtask_add();
+            case 2 -> jtask_remove();
+            case 3 -> jtask_edit();
+            case 4 -> jtask_reset();
+            case 5 -> jtask_viewAll(false);
+            case 6 -> save();
+            case 7 -> jtask_settings();
         }
     }
 
@@ -211,7 +199,7 @@ public class Jtask {
      */
     private void jtask_add() {
         System.out.println("jtask: add a new task.");
-        Task t = null;
+        Task t;
         do {
             t = add_collectProtocol();
         } while (!Utils.confirmAdd(t));
@@ -248,7 +236,7 @@ public class Jtask {
             toRemove = selectTask();
         } while (toRemove == null);
         loadedList.remove(loadedList.get(toRemove));
-        Task.shiftLeftTaskListKeys(loadedList, toRemove-1);
+        Task.shiftLeftTaskListKeys(loadedList, toRemove - 1);
         save();
     }
 
@@ -275,12 +263,10 @@ public class Jtask {
     private void editProtocol(Task toEdit) {
         System.out.println("You chose to edit :");
         toEdit.display(true);
-        int input = 0;
-        do {
-            System.out.println("Select what you want to edit:");
-            System.out.println("(1) Title  (2) Description  (3) Status  (4) Back to menu");
-            input = new Scanner(System.in).nextInt();
-        } while (input < 1 && input > 4);
+        int input;
+        System.out.println("Select what you want to edit:");
+        System.out.println("(1) Title  (2) Description  (3) Status  (4) Back to menu");
+        input = new Scanner(System.in).nextInt();
         switch (input) {
             case 1 -> toEdit.setLabel(Utils.retrieveLabel());
             case 2 -> toEdit.setDesc(Utils.retrieveDesc());
@@ -289,13 +275,13 @@ public class Jtask {
         if (input != 4) {
             System.out.printf("Successfully edited task %s.\n", toEdit.getLabel());
         }
-        
+
     }
 
     /**
      * <strong> Make user select a task from its key.</strong> <br>
      * Will check if the given key corresponds to a real task.
-     * 
+     *
      * @return the task key
      */
     private Integer selectTask() {
@@ -310,7 +296,7 @@ public class Jtask {
             return null;
         }
     }
-    
+
     /**
      * TODO
      */
