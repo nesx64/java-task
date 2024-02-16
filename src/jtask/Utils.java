@@ -17,6 +17,9 @@ public class Utils {
      * @return the converted String
      */
     static LocalDate convertFileInputToDate(String input) {
+        if (input.isEmpty()) {
+            return null;
+        }
         int i = 0;
         int dtype = 0;
         int year = 0;

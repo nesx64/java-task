@@ -24,12 +24,12 @@ public class Task {
      * <strong>Main constructor of Task class.</strong><br>
      * Initialize a new instance of a task.
      *
-     * @param aLabel name of the specified task
+     * @param aLabel     name of the specified task
      * @param aBeginDate date of the beginning of the task
-     * @param anEndDate date of the end of the task.
-     * @param aType type of the task
-     * @param aDesc description of the task
-     * @param aStatus current status of the task
+     * @param anEndDate  date of the end of the task.
+     * @param aType      type of the task
+     * @param aDesc      description of the task
+     * @param aStatus    current status of the task
      */
     public Task(String aLabel, LocalDate aBeginDate, LocalDate anEndDate, TaskType aType, String aDesc, Boolean aStatus) {
         key = taskSize;
@@ -83,12 +83,7 @@ public class Task {
      *
      * @return the end date
      */
-    public LocalDate getEnd() {
-        if (done) {
-            return end;
-        }
-        return null;
-    }
+    public LocalDate getEnd() { return end; }
 
     /**
      * Return the type of the task.
@@ -157,12 +152,12 @@ public class Task {
 
     /**
      * Shift all tasks keys to the left inside the given list of tasks.
-     * 
-     * @param lst list of tasks to be shifted
+     *
+     * @param lst   list of tasks to be shifted
      * @param start index where the shift will start
      */
     public static void shiftLeftTaskListKeys(ArrayList<Task> lst, int start) {
-        int i =0;
+        int i = 0;
         if (!lst.isEmpty()) {
             for (Task t : lst) {
                 if (i > start) {
@@ -185,11 +180,9 @@ public class Task {
             System.out.printf("Key: %d ", getKey());
         }
         if (done && end != null) {
-            System.out.printf("Label: %s\n > Begin: %s; End: %s\n > Type: %s; Description: %s\n > Done: %s\n\n ---- \n\n",
-                    getLabel(), getBeginning(), getEnd(), getTaskType(), getDescription(), isDone());
+            System.out.printf("Label: %s\n > Begin: %s; End: %s\n > Type: %s; Description: %s\n > Done: %s\n\n ---- \n\n", getLabel(), getBeginning(), getEnd(), getTaskType(), getDescription(), isDone());
         } else {
-            System.out.printf("Label: %s\n > Begin: %s\n > Type: %s; Description: %s\n > Done: %s\n\n ---- \n\n",
-                    getLabel(), getBeginning(), getTaskType(), getDescription(), isDone());
+            System.out.printf("Label: %s\n > Begin: %s\n > Type: %s; Description: %s\n > Done: %s\n\n ---- \n\n", getLabel(), getBeginning(), getTaskType(), getDescription(), isDone());
         }
     }
 }

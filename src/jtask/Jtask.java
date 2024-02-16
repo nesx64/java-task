@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Scanner;
 import java.io.*;
 import java.time.LocalDate;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+import org.json.*;
 
 /**
  * @author nesx64
@@ -17,8 +17,7 @@ public class Jtask {
     String saveFilePath;
     final Jsettings settings;
     final static int EXIT_PROGRAM = 8;
-    final static String SAVE_FILE_SEPARATOR = ";:;";
-    final static String VERSION = "v0.3.1";
+    final static String VERSION = "v0.4";
     final static int ERROR_EXIT_CODE = 1;
 
     /**
@@ -34,7 +33,7 @@ public class Jtask {
     /**
      * Launching jtask program after init.
      */
-    public void run() {
+    private void run() {
         Scanner sc = new Scanner(System.in);
         int userInput = 0;
         while (userInput != EXIT_PROGRAM) {
@@ -45,32 +44,30 @@ public class Jtask {
     }
 
     /**
-     * Check whether existing file containing all tasks already exists or not. If
-     * the file already exists, it will load everything inside the global list.
-     * If autoload is enabled, will not ask for typing and will load
-     * automatically the save file.
+     * <strong> Initialize jtask by loading up all data.</strong> <br>
+     * Will create the specified file if not found. Save file is restricted to
+     * be JSON only.
      */
-    public void init() {
+    private void init() {
         if (!settings.autoloadEnabled()) {
-            System.out.println("If you already have an existing file with data, please type the file path, else the file will be created: ");
-            Scanner sc = new Scanner(System.in);
-            String filePath = sc.nextLine();
-            saveFilePath = filePath;
+            System.out.println("If you already have an existing file with data, please type the file path, else the file will be created:");
+            saveFilePath = retrieveJsonFile();
             try {
-                File data = new File(filePath);
+                File data = new File(saveFilePath);
                 if (data.createNewFile()) {
-                    System.out.printf("Data file created: %s\n", data.getName());
-                    System.out.printf("jtask program is setting up...\n");
+                    System.out.println("%s file was created. It will be the default save file.");
+                    settings.setSavePath(saveFilePath);
+                    System.out.println("You can enable autoload is settings to skip this step next time.");
+                    System.out.println("jtask is setting up...");
                 } else {
-                    init_loadSequence(data);
+                    loadJson(data);
                 }
             } catch (IOException e) {
-                System.err.printf("No file name provided.\n");
-                this.init();
+                System.err.println("jtask: no file name provided. Try again.");
             }
         } else {
             try {
-                init_loadSequence(new File(settings.getSavePath()));
+                loadJson(new File(settings.getSavePath()));
             } catch (FileNotFoundException ex) {
                 System.err.printf("jtask: loading data error: save file was not found.\n");
                 System.err.printf("as autoload is enabled, it will now be disabled.\n\n");
@@ -80,14 +77,30 @@ public class Jtask {
                 init();
             }
         }
-        System.out.printf("jtask ready!\n\n");
+    }
+
+    /**
+     * <strong> Retrieve the json save file path for init. </strong>
+     * Only used when autoload is disabled.
+     *
+     * @return the retrieved json file path (as a String)
+     */
+    private String retrieveJsonFile() {
+        String jsonFile;
+        boolean fileIsJson;
+        do {
+            Scanner sc = new Scanner(System.in);
+            jsonFile = sc.nextLine();
+            fileIsJson = jsonFile.substring(jsonFile.length() - 3).equals("json");
+        } while (!fileIsJson);
+        return jsonFile;
     }
 
     /**
      * <strong>Exit jtask program.</strong> <br>
      * Save in the save file all new added tasks, only if autosave is enabled.
      */
-    public void exit() {
+    private void exit() {
         if (settings.autosaveEnabled()) {
             System.out.printf("jtask: saving ...\n");
             if (!addedTasks.isEmpty()) {
@@ -104,40 +117,40 @@ public class Jtask {
         System.out.println("If you've faced any bugs, please contact me on https://github.com/nesx64/jtask");
     }
 
+    private void clearAddedQueue() {
+        loadedList.addAll(addedTasks);
+        addedTasks.clear();
+    }
+
     /**
      * <strong>Save jtask tasks to save file.</strong>
      */
     private void save() {
-        try {
-            PrintWriter pw = new PrintWriter(new FileWriter(saveFilePath, false));
-            if (!loadedList.isEmpty()) {
-                writeSaveFile(pw, loadedList);
-            }
-            writeSaveFile(pw, addedTasks);
-            loadedList.addAll(addedTasks);
-            addedTasks.clear();
-            System.out.println("jtask: successfully saved.\n\n");
-            pw.flush();
-            pw.close();
-        } catch (IOException ex) {
-            Logger.getLogger(Jtask.class.getName()).log(Level.SEVERE, null, ex);
+        clearAddedQueue();
+        try (Writer writer = new PrintWriter(saveFilePath)) {
+            JSONArray js = new JSONArray();
+            fillJsonArray(js);
+            writer.write(js.toString());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        System.out.println("jtask: successfully saved.\n\n");
     }
-    /**
-     * <strong> Write in save file from the given list all tasks.</strong> <br>
-     *
-     * @param pw printWriter used to write into the save file
-     * @param list list to be copied into the save file
-     */
-    private void writeSaveFile(PrintWriter pw, ArrayList<Task> list) {
-        for (Task t : list) {
-            if (t.isDone()) {
-                pw.printf("%s%s%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVE_FILE_SEPARATOR, t.getBeginning(), SAVE_FILE_SEPARATOR,
-                        t.getEnd(), SAVE_FILE_SEPARATOR, t.getTaskType(), SAVE_FILE_SEPARATOR, t.getDescription(), SAVE_FILE_SEPARATOR, t.isDone());
+
+    private void fillJsonArray(JSONArray array) {
+        for (Task t : loadedList) {
+            JSONObject obj = new JSONObject();
+            obj.put("label", t.getLabel());
+            obj.put("beginDate", t.getBeginning().toString());
+            if (t.getEnd() == null) {
+                obj.put("endDate", "");
             } else {
-                pw.printf("%s%s%s%s%s%s%s%s%s\n", t.getLabel(), SAVE_FILE_SEPARATOR, t.getBeginning(), SAVE_FILE_SEPARATOR,
-                        t.getTaskType(), SAVE_FILE_SEPARATOR, t.getDescription(), SAVE_FILE_SEPARATOR, t.isDone());
+                obj.put("endDate", t.getEnd());
             }
+            obj.put("taskType", t.getTaskType().toString());
+            obj.put("description", t.getDescription());
+            obj.put("done", t.isDone().toString());
+            array.put(obj);
         }
     }
 
@@ -145,27 +158,20 @@ public class Jtask {
      * <strong> Loading sequence of jtask init. </strong> <br> Will load save
      * file if it exists.
      */
-    private void init_loadSequence(File filePath) throws FileNotFoundException {
-        System.out.printf("Loading %s ...\n", filePath);
-        Scanner fileInput = new Scanner(filePath);
-        while (fileInput.hasNextLine()) {
-            String currentLine = fileInput.nextLine();
-            String[] elements = currentLine.split(SAVE_FILE_SEPARATOR);
-            if (elements.length < 5 || elements.length > 6) {
-                jtask_err_wrongFormat(filePath.toString(), currentLine);
+    private void loadJson(File filePath) throws FileNotFoundException {
+        System.out.println("Loading...");
+        try (Reader reader = new FileReader(filePath)) {
+            JSONTokener token = new JSONTokener(reader);
+            JSONArray saveJson = new JSONArray(token);
+            for (int i = 0; i < saveJson.length(); i++) {
+                JSONObject current = saveJson.getJSONObject(i);
+                LocalDate begin = Utils.convertFileInputToDate(current.getString("beginDate"));
+                LocalDate end = Utils.convertFileInputToDate(current.getString("endDate"));
+                TaskType ttype = TaskType.convertFileInputToTaskType(current.getString("taskType"));
+                loadedList.add(new Task(current.getString("label"), begin, end, ttype, current.getString("description"), current.getBoolean("done")));
             }
-            LocalDate begin = Utils.convertFileInputToDate(elements[1]);
-
-            if (elements.length > 5) {
-                LocalDate end = Utils.convertFileInputToDate(elements[2]);
-                TaskType type = TaskType.convertFileInputToTaskType(elements[3]);
-                Boolean status = Utils.convertInputToBoolean(elements[5]);
-                loadedList.add(new Task(elements[0], begin, end, type, elements[4], status));
-            } else {
-                TaskType type = TaskType.convertFileInputToTaskType(elements[2]);
-                Boolean status = Utils.convertInputToBoolean(elements[4]);
-                loadedList.add(new Task(elements[0], begin, null, type, elements[3], status));
-            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -363,22 +369,6 @@ public class Jtask {
             System.out.println("Settings successfully updated and reloaded.");
         }
         System.out.println("Going back to menu...");
-    }
-
-    /**
-     * <strong>Outputs error for wrong save file formatting.</strong><br>
-     * Displays the expected line format.
-     *
-     * @param fileName file name that has wrong format.
-     */
-    private static void jtask_err_wrongFormat(String fileName, String line) {
-        System.err.printf("jtask: error: file %s has wrong format.\n", fileName);
-        System.err.printf("found: \n%s\n", line);
-        System.err.printf("Expected line format:\n");
-        System.err.printf("[LABEL];:;[BEGIN DATE];:;__optional__[END DATE];:;[TASK TYPE];:;[DESCRIPTION];:;[TASK STATUS]\n");
-        System.err.printf("Check carefully for ;:; separator, arg numbers. Description cannot have spaces.\n");
-        System.err.printf("Dates format : YYYY-MM-DD\n\n");
-        System.exit(1);
     }
 
     /**

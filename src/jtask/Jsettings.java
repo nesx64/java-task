@@ -273,7 +273,7 @@ public class Jsettings {
      *
      * @param newPath new save file path
      */
-    private void setSavePath(String newPath) {
+    public void setSavePath(String newPath) {
         savePath = newPath;
     }
 

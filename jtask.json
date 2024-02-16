@@ -1,3 +1,42 @@
-etrdyfghjk;:;2000-02-20;:;ENTERTAINMENT;:;zqersh;:;false
-etsrdfhgj;:;1555-02-12;:;CHORES;:;fujozeidfzd zgd zdzd z dygz d;:;false
-BABA;:;2000-01-01;:;JOB;:;BABABAB;:;false
+[
+  {
+    "beginDate": "2000-02-20",
+    "taskType": "ENTERTAINMENT",
+    "endDate": "",
+    "description": "zqersh",
+    "label": "etrdyfghjk",
+    "done": "false"
+  },
+  {
+    "beginDate": "1555-02-12",
+    "taskType": "CHORES",
+    "endDate": "",
+    "description": "fujozeidfzd zgd zdzd z dygz d",
+    "label": "etsrdfhgj",
+    "done": "false"
+  },
+  {
+    "beginDate": "2000-01-01",
+    "taskType": "JOB",
+    "endDate": "",
+    "description": "zqersh",
+    "label": "BABA",
+    "done": "false"
+  },
+  {
+    "beginDate": "2000-01-01",
+    "taskType": "JOB",
+    "endDate": "",
+    "description": "BABAB",
+    "label": "BAB",
+    "done": "false"
+  },
+  {
+    "beginDate": "2000-01-01",
+    "taskType": "STUDY",
+    "endDate": "",
+    "description": "2000",
+    "label": "BABSUA",
+    "done": "false"
+  }
+]

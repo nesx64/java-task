@@ -16,7 +16,7 @@ jtask is a lightweight task manager designed to help you organize your tasks eff
 - [ ] **Enhanced UI**: Better visibility to visualize tasks.
 - [ ] **A better UX**: Gradually working toward a real GUI.
 - [ ] **Stronger code**: Better handling in unexpected exceptions.
-- [ ] **JSON**: A new way of manipulating data structures for Jtask
+- [X] **JSON**: A new way of manipulating data structures for Jtask
 
 > [!IMPORTANT]
 > For now, it doesn't have a GUI, newer versions will have one.
