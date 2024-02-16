@@ -1,4 +1,4 @@
-# jtask v0.3
+# jtask v0.4
 
 jtask is a lightweight task manager designed to help you organize your tasks efficiently. It is still in development and may lack some features, but it aims to provide a simple and intuitive interface for managing your tasks.
 
