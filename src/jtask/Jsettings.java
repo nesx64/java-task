@@ -4,6 +4,10 @@ import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
+import error.ERR_ORIGIN;
+import error.ERR_TYPE;
+import error.JtaskException;
+
 /**
  *
  * @author nesx64
@@ -20,7 +24,7 @@ public class Jsettings {
      * <strong> Main constructor for Jsettings class. </strong> <br>
      * Instances a new Jsettings object for Jtask.
      */
-    Jsettings() {
+    Jsettings() throws JtaskException {
         loadSettingsProtocol();
     }
 
@@ -30,7 +34,7 @@ public class Jsettings {
      * Check if an existing settings file exists, if not, it will create a copy
      * of default settings from default directory.
      */
-    private void loadSettingsProtocol() {
+    private void loadSettingsProtocol() throws JtaskException {
         try {
             File setFile = new File(SETTINGS_FILE);
             if (!setFile.isFile()) {
@@ -38,7 +42,8 @@ public class Jsettings {
             }
             loadSettings();
         } catch (IOException e) {
-            System.err.printf("jtask: unexpected error occurred in loading current settings. check def directory or reinstall jtask.\n");
+            System.err.printf(
+                    "jtask: unexpected error occurred in loading current settings. check def directory or reinstall jtask.\n");
             System.exit(Jtask.ERROR_EXIT_CODE);
         }
     }
@@ -46,8 +51,10 @@ public class Jsettings {
     /**
      * <strong> Load all settings from settings file. </strong> <br>
      * settings.ini file may exist before trying to load.
+     * 
+     * @throws JtaskException
      */
-    private void loadSettings() throws FileNotFoundException {
+    private void loadSettings() throws FileNotFoundException, JtaskException {
         Scanner sc = new Scanner(new File(SETTINGS_FILE));
         while (sc.hasNextLine()) {
             String currentLine = sc.nextLine();
@@ -60,40 +67,14 @@ public class Jsettings {
                         autoload = Utils.convertInputToBoolean(key);
                     case "save_file" ->
                         savePath = key;
-                    default ->
-                        settingsError_wrongFormat(currentLine);
+                    default -> 
+                        throw new JtaskException(ERR_TYPE.INVALID_FORMAT, ERR_ORIGIN.SETTINGS, 12);
                 }
             }
         }
         if (autosave == null || autoload == null | savePath.isEmpty()) {
-            settingsError_corrupted();
-            System.exit(Jtask.ERROR_EXIT_CODE);
+            throw new JtaskException(ERR_TYPE.CORRUPTED, ERR_ORIGIN.SETTINGS, 11);
         }
-    }
-
-    /**
-     * <strong> Display an error corresponding to wrong format for settings
-     * file.</strong><br>
-     * Could be wrong format, or non existing settings for Jtask instance.
-     *
-     * @param settingLine corresponding line that has wrong format or non-existing
-     * setting.
-     */
-    private void settingsError_wrongFormat(String settingLine) {
-        System.err.printf("jtask: wrong format or non existing setting in %s file.", SETTINGS_FILE);
-        System.err.printf("Responsible line: %s", settingLine);
-    }
-
-    /**
-     * <strong> Display an error corresponding to possibly corrupted settings
-     * file.</strong><br>
-     * Could be missing setting line. Check default settings file if it ever
-     * happens.
-     *
-     */
-    private void settingsError_corrupted() {
-        System.err.printf("jtask: possible %s file corrupted or missing setting line.\n", SETTINGS_FILE);
-        System.err.printf("check def/settings.ini to confirm no line is missing.\n");
     }
 
     /**
@@ -205,7 +186,7 @@ public class Jsettings {
     private String editSavePath() {
         String newPath;
         System.out.printf("current save file path: %s\n", savePath);
-        
+
         do {
             System.out.println("Please type the new save file path:");
             newPath = new Scanner(System.in).nextLine();
@@ -282,7 +263,7 @@ public class Jsettings {
      * settings.</strong> <br>
      * Will check if settings file exists, if not, Jtask will exit.
      */
-    public void update() {
+    public void update() throws JtaskException {
         try {
             if (new File(SETTINGS_FILE).isFile()) {
                 PrintWriter pw = new PrintWriter(new FileWriter(SETTINGS_FILE, false), true);

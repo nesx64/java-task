@@ -5,6 +5,7 @@ import java.util.Scanner;
 import java.io.*;
 import java.time.LocalDate;
 
+import error.*;
 import org.json.*;
 
 /**
@@ -23,7 +24,7 @@ public class Jtask {
     /**
      * Main constructor for Jtask class.
      */
-    public Jtask() {
+    public Jtask() throws JtaskException {
         loadedList = new ArrayList<>();
         addedTasks = new ArrayList<>();
         settings = new Jsettings();
@@ -33,7 +34,7 @@ public class Jtask {
     /**
      * Launching jtask program after init.
      */
-    private void run() {
+    private void run() throws JtaskException{
         Scanner sc = new Scanner(System.in);
         int userInput = 0;
         while (userInput != EXIT_PROGRAM) {
@@ -47,8 +48,9 @@ public class Jtask {
      * <strong> Initialize jtask by loading up all data.</strong> <br>
      * Will create the specified file if not found. Save file is restricted to
      * be JSON only.
+     * @throws JtaskException 
      */
-    private void init() {
+    private void init() throws JtaskException {
         if (!settings.autoloadEnabled()) {
             System.out.println("If you already have an existing file with data, please type the file path, else the file will be created:");
             saveFilePath = retrieveJsonFile();
@@ -157,8 +159,9 @@ public class Jtask {
     /**
      * <strong> Loading sequence of jtask init. </strong> <br> Will load save
      * file if it exists.
+     * @throws JtaskException 
      */
-    private void loadJson(File filePath) throws FileNotFoundException {
+    private void loadJson(File filePath) throws FileNotFoundException, JtaskException {
         System.out.println("Loading...");
         try (Reader reader = new FileReader(filePath)) {
             JSONTokener token = new JSONTokener(reader);
@@ -171,7 +174,7 @@ public class Jtask {
                 loadedList.add(new Task(current.getString("label"), begin, end, ttype, current.getString("description"), current.getBoolean("done")));
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new JtaskException(ERR_TYPE.FILE_NOT_FOUND,ERR_ORIGIN.APP, 21);
         }
     }
 
@@ -182,7 +185,7 @@ public class Jtask {
      *
      * @param input user input to select the command
      */
-    private void inputCheck(int input) {
+    private void inputCheck(int input) throws JtaskException{
         if (input > 8 || input < 1) {
             System.err.printf("jtask: error: incorrect input for menu selection.");
             return;
@@ -362,7 +365,7 @@ public class Jtask {
      * If any setting is modified, the <code> settings.ini</code> file <br>
      * will be updated.
      */
-    private void jtask_settings() {
+    private void jtask_settings() throws JtaskException {
         settings.displaySettingsStatus();
         if (settings.edit()) {
             settings.update();
@@ -374,7 +377,7 @@ public class Jtask {
     /**
      * @param args the command line arguments
      */
-    public static void main(String[] args) {
+    public static void main(String[] args) throws JtaskException{
         Jtask global = new Jtask();
         System.out.print(Utils.JTASK_INFO);
         global.init();
